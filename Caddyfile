@@ -1,0 +1,11 @@
+auth.local {
+    reverse_proxy keycloak:8080
+}
+
+app.local {
+    reverse_proxy quarkus-app:8080
+}
+
+tracing.local {
+    reverse_proxy jaeger:16686
+}

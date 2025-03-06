@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    command: ["start"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: "auth.local"
+      KC_PROXY_HEADERS: xforwarded
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_TRACING_ENABLED: "true"
+      KC_TRACING_ENDPOINT: "http://jaeger:4317"
+    networks:
+      - backend
+
+  quarkus-app:
+    image: ealen/echo-server:latest
+    container_name: quarkus-app
+    restart: unless-stopped
+    depends_on:
+      - keycloak
+      - jaeger
+    environment:
+      QUARKUS_OIDC_AUTH_SERVER_URL: "http://keycloak:8080/realms/myrealm"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+    command: ["--port", "8080"]
+    networks:
+      - backend
+
+  jaeger:
+    image: jaegertracing/jaeger:2.3.0
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - backend
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  backend:
