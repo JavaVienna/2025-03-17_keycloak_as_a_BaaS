@@ -1,11 +1,19 @@
-auth.local {
+{
+    local_certs
+}
+
+https://auth.127-0-0-1.nip.io {
     reverse_proxy keycloak:8080
 }
 
-app.local {
+https://app.127-0-0-1.nip.io {
     reverse_proxy quarkus-app:8080
 }
 
-tracing.local {
+https://spa.127-0-0-1.nip.io {
+    reverse_proxy spa:8080
+}
+
+https://tracing.127-0-0-1.nip.io {
     reverse_proxy jaeger:16686
 }

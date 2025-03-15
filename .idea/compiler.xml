@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="keycloak-quarkus-example" />
+        <module name="keycloak-customized" />
+        <module name="keycloak-location-attribute" />
+        <module name="keycloak-spa-example" />
+        <module name="keycloak-themes" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="javavienna-keycloak-quarkus-example.integrationTest" target="21" />
+      <module name="javavienna-keycloak-quarkus-example.main" target="21" />
+      <module name="javavienna-keycloak-quarkus-example.native-test" target="21" />
+      <module name="javavienna-keycloak-quarkus-example.quarkus-generated-sources" target="21" />
+      <module name="javavienna-keycloak-quarkus-example.quarkus-test-generated-sources" target="21" />
+      <module name="javavienna-keycloak-quarkus-example.test" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="keycloak-quarkus-example" options="-parameters" />
+      <module name="keycloak-spa-example" options="-parameters" />
+    </option>
+  </component>
+</project>

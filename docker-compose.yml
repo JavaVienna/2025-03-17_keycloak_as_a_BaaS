@@ -15,12 +15,12 @@ services:
       - backend
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: localhost/javavienna/keycloak-customized:latest
     container_name: keycloak
     depends_on:
       - postgres
     restart: unless-stopped
-    command: ["start"]
+    command: ["start-dev", "--debug"]
     environment:
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
@@ -28,26 +28,47 @@ services:
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak
       KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME: "auth.local"
+      KC_HOSTNAME: "auth.127-0-0-1.nip.io"
       KC_PROXY_HEADERS: xforwarded
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_TRACING_ENABLED: "true"
       KC_TRACING_ENDPOINT: "http://jaeger:4317"
+      DEBUG_PORT: "*:8787"
+    ports:
+      - 8787:8787 # debug port
     networks:
       - backend
 
   quarkus-app:
-    image: ealen/echo-server:latest
+    image: localhost/javavienna/keycloak-quarkus-example:latest
     container_name: quarkus-app
     restart: unless-stopped
     depends_on:
       - keycloak
       - jaeger
     environment:
-      QUARKUS_OIDC_AUTH_SERVER_URL: "http://keycloak:8080/realms/myrealm"
+      QUARKUS_OIDC_AUTH_SERVER_URL: "https://auth.127-0-0-1.nip.io/realms/javavienna"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      QUARKUS_OIDC_TLS_VERIFICATION: none # DO NOT DO THIS IN PRODUCTION!! (we need this to avoid importing the caddy local-ca)
+
+      QUARKUS_OIDC_APPLICATION_TYPE: hybrid # we do this to enable the enable bearer-token client (like swagger-ui)
+
+      # this is needed because we run behind a reverse-proxy (caddy) without it the redirect-url get messed up
+      QUARKUS_HTTP_PROXY_PROXY_ADDRESS_FORWARDING: true
+      QUARKUS_HTTP_PROXY_ENABLE_FORWARDED_HOST: true
+      QUARKUS_HTTP_PROXY_ENABLE_FORWARDED_PREFIX: true
     command: ["--port", "8080"]
+    networks:
+      - backend
+
+  spa:
+    image: localhost/javavienna/keycloak-spa-example:latest
+    container_name: spa
+    restart: unless-stopped
+    depends_on:
+      - keycloak
+    command: [ "--port", "8080" ]
     networks:
       - backend
 
@@ -73,12 +94,43 @@ services:
       - caddy_config:/config
       - ./Caddyfile:/etc/caddy/Caddyfile
     networks:
+      backend:
+        aliases:
+          - auth.127-0-0-1.nip.io # we need this make back-channel calls from quarkus possible
+  
+  mail:
+    image: axllent/mailpit
+    container_name: mail
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    environment:
+      - MP_DATABASE=/data/mailpit.db
+    volumes:
+      - mailpit_data:/data
+    networks:
+      - backend
+
+  terminal:
+    image: localhost/keycloak-terminal:latest
+    container_name: terminal
+    build:
+      context: config/
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./config:/root/config
+    ports:
+      - "2222:2222"
+    networks:
       - backend
 
 volumes:
   postgres_data:
   caddy_data:
   caddy_config:
+  mailpit_data:
 
 networks:
   backend:
