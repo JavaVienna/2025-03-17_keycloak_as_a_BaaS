@@ -1,14 +1,5 @@
 terraform {
   required_providers {
-    /*
-    // this is not currently supported with the stock intellij plugin :(
-    # https://search.opentofu.org/provider/keycloak/keycloak/latest
-    keycloak = {
-      source  = "keycloak/keycloak"
-      version = "5.1.1"
-    }
-     */
-
     # https://registry.terraform.io/providers/mrparkers/keycloak/latest
     keycloak = {
       source  = "mrparkers/keycloak"
@@ -28,8 +19,30 @@ resource "keycloak_realm" "realm" {
   realm        = "javavienna"
   registration_allowed           = true
   registration_email_as_username = true
+  login_with_email_allowed = true
   verify_email                   = true
   reset_password_allowed = true
+
+  # we intentionally set this to a very log value to see what happens on access_token timeout
+  access_token_lifespan = "1m0s"
+
+  # this is a mocked smtp-server. See README for the url
+  smtp_server {
+    from     = "noreply@example.com"
+    host     = "mail"
+    port     = "1025"
+    ssl      = false
+    starttls = false
+  }
+}
+
+resource "keycloak_realm_events" "realm" {
+  realm_id = keycloak_realm.realm.id
+  events_listeners = [
+    "jboss-logging", # default logging event-handler
+    "webhook-http", # webhook plugin (see README)
+    "email" # magic-link plugin (see README)
+  ]
 }
 
 # we just create a group for admins
@@ -45,6 +58,7 @@ resource "keycloak_openid_client" "quarkus_example" {
   name      = "Quarkus Example"
   access_type         = "CONFIDENTIAL"
   standard_flow_enabled = true
+  direct_access_grants_enabled = true
   valid_redirect_uris = [
     "https://app.127-0-0-1.nip.io/*",
     "http://localhost:8080/*" # to support dev-mode swagger-ui
@@ -261,3 +275,7 @@ resource "keycloak_realm_user_profile" "profile" {
   }
 }
 
+module "module_using_keycloak_new" {
+  source = "./new"
+  keycloak_realm_id = keycloak_realm.realm.id
+}

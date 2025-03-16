@@ -35,6 +35,11 @@ services:
       KC_TRACING_ENABLED: "true"
       KC_TRACING_ENDPOINT: "http://jaeger:4317"
       DEBUG_PORT: "*:8787"
+
+      # webhook config
+      WEBHOOK_HTTP_BASE_PATH: "http://webhook:8080/11111111-2222-3333-4444-555555555555"
+      WEBHOOK_HTTP_AUTH_USERNAME: "admin"
+      WEBHOOK_HTTP_AUTH_PASSWORD: "password"
     ports:
       - 8787:8787 # debug port
     networks:
@@ -102,9 +107,6 @@ services:
     image: axllent/mailpit
     container_name: mail
     restart: unless-stopped
-    ports:
-      - "8025:8025"
-      - "1025:1025"
     environment:
       - MP_DATABASE=/data/mailpit.db
     volumes:
@@ -119,10 +121,19 @@ services:
       context: config/
     tty: true
     stdin_open: true
+    working_dir: /root/config
     volumes:
       - ./config:/root/config
     ports:
       - "2222:2222"
+    networks:
+      - backend
+
+  webhook:
+    image: ghcr.io/tarampampam/webhook-tester:2.2.1
+    container_name: webhook
+    environment:
+      AUTO_CREATE_SESSIONS: true
     networks:
       - backend
 

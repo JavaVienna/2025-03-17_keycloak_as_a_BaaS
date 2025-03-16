@@ -17,3 +17,15 @@ https://spa.127-0-0-1.nip.io {
 https://tracing.127-0-0-1.nip.io {
     reverse_proxy jaeger:16686
 }
+
+https://mail.127-0-0-1.nip.io {
+    reverse_proxy mail:8025
+}
+
+https://webhook.127-0-0-1.nip.io {
+    reverse_proxy webhook:8080
+}
+
+https://terminal.127-0-0-1.nip.io {
+    reverse_proxy terminal:2222
+}
