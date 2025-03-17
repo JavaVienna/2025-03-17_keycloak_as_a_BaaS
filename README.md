@@ -10,7 +10,7 @@ Have fun playing around with it.
 > production environments. Please read the appropriate guides, consult your security-exports of trust and do a solid
 > PoC before considering implementing your own IdP-Service. If you are not willing or able to invest the time to do so,
 > I would recommend sticking with an IdP-as-a-Service Provider of your choice 
-> (0auth, Okta, Microsoft EntraId, Amazon Cognito, Google Cloud Identity Platform, just to name a few).
+> (0auth, Okta, Microsoft Entra ID, Amazon Cognito, Google Cloud Identity Platform, just to name a few).
 
 ## Setup
 
@@ -82,7 +82,7 @@ graph TD;
 
 * podman or docker installed (podman desktop recommended)
 * java 21+
-* ~ 2,5GB RAM and >2CPU Cores
+* ~ 4GB RAM and >2CPU Cores
 * Experience with java, linux, linux-containers and maven helps, but it should be doable without.
 
 ### Steps
@@ -145,6 +145,38 @@ graph TD;
 * You can also play around with the buttons on the bottom. Open your browser console to get some more insights of
   what is going on.
 * You can also wait for your access token to expire. Check the console, how does it work?
+
+### Custom User Attributes with custom validator
+
+* The keycloak contains a custom validator plugin that can check if an attribute profile fields
+  contains a valid country-code.
+* Just login as admin
+* Open the javavienna realm
+* Go to users
+* Click on a user
+* You should see 2 custom fields "Java Experience" and "Location"
+* Try to set something invalid to the location field (like TEST). 
+* See that there is a generic error-message-id shown
+
+If you want to add or modify fields, have a look at `Realm Sessions > User Profile`.
+
+### Custom Themes
+
+* There is a custom Account, Login and E-Mail Theme already added to this Keycloak.
+* Login as admin
+* Go to the javavienna realm
+* Go to Realm Settings
+* Select Themes
+* Choose the Custom Theme for Account, Login and E-Mail.
+* To see the changes, go to EMail and sendout a test-mail.
+* Go to mailpit (https://mail.127-0-0-1.nip.io) and see the acsii-art added to the mail.
+  * If you want to experiment with templated just edit the files in the keycloak-themes project.
+* For the login changes, just try to login to some application on the javavienna realm. 
+  You should see the "javavienna" banner in big red letters now.
+* The account theme is only adding some text to the generic error that is shown if you enter a wrong country-code 
+  as location in the user-profile.
+* So login to the account-panel (https://auth.127-0-0-1.nip.io/realms/javavienna/account) and try to add
+  something invalid as location (e.g. TEST). There is now a sensible error-message.
 
 ### Magic Link
 
