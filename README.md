@@ -225,3 +225,7 @@ If you want to add or modify fields, have a look at `Realm Sessions > User Profi
   try if you have to manage a very big and complex Keycloak Installation. Sometimes "doing it the hard way" is the right
   way to do it.
 * Join us on one of the many community meetings around the world. Follow us here: https://www.keycloak.org/community
+
+## Presentation
+
+[![Presentation](./2025-JavaVienna-Keycloak.gif)](https://riitat-my.sharepoint.com/:p:/g/personal/michael_riedmann_riit_at/EVt7ar6-6otOtf-7iLATXBIBNlAxPnGfOaTcwuq0Go5VgA?e=PcdX6c)
